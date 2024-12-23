@@ -1,101 +1,108 @@
-import Image from "next/image";
+"use client";
+
+import { ReactElement, useState, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  // Define a numbers array called drawnedNumbers
+  const [drawnedNumbers, setDrawnedNumbers] = useState<number[]>([]);
+  const [lastNumber, setLastNumber] = useState<number>(0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Function to draw a random number that is not in the drawnedNumbers array
+  function drawNumber() {
+    if (drawnedNumbers.length === 75) {
+      alert("All numbers have been drawn");
+      return;
+    }
+    let number: number;
+    do {
+      number = Math.floor(Math.random() * 75) + 1;
+    } while (drawnedNumbers.includes(number));
+    setLastNumber(number);
+    setDrawnedNumbers([...drawnedNumbers, number]);
+  }
+
+  // Function to reset the drawnedNumbers array
+  function reset() {
+    setDrawnedNumbers([]);
+  }
+
+  function numbers(
+    start: number,
+    drawnedNumbers: number[],
+    color: string
+  ): ReactElement[] {
+    const result: ReactElement[] = [];
+    for (let i = start; i < start + 15; i++) {
+      const wasDrawned: boolean = drawnedNumbers.includes(i);
+      const className = ["bingo_ball", `bingo_ball__${color}`];
+      if (wasDrawned) {
+        className.push("selected");
+      }
+      result.push(
+        <span key={i} className={className.join(" ")}>
+          {i}
+        </span>
+      );
+    }
+    return result;
+  }
+
+  useEffect(() => {
+    if (lastNumber === undefined || lastNumber === 0) {
+      return;
+    }
+    let file: string = "";
+    if (lastNumber < 16) {
+      file = "B";
+    } else if (lastNumber < 31) {
+      file = "I";
+    } else if (lastNumber < 46) {
+      file = "N";
+    } else if (lastNumber < 61) {
+      file = "G";
+    } else {
+      file = "O";
+    }
+    const audio = new Audio(`/sounds/${file}.${lastNumber}.mp3`);
+    audio.play();
+  }, [lastNumber]);
+
+  return (
+    <div className="container">
+      <aside>
+        <button
+          type="button"
+          className="bingo_button"
+          onClick={drawNumber}
+          disabled={drawnedNumbers.length === 75}
+        >
+          Sortear
+        </button>
+
+        <button type="button" className="bingo_button" onClick={reset}>
+          Recomeçar
+        </button>
+
+        <div>
+          <h3>Última pedra</h3>
+          <p className="bingo_ball selected last-number">
+            {lastNumber > 0 && lastNumber}
+          </p>
         </div>
+      </aside>
+
+      <main id="bingo_table">
+        <h2 className="bingo_ball selected">B</h2>
+        <h2 className="bingo_ball selected">I</h2>
+        <h2 className="bingo_ball selected">N</h2>
+        <h2 className="bingo_ball selected">G</h2>
+        <h2 className="bingo_ball selected">O</h2>
+        <div>{numbers(1, drawnedNumbers, "red")}</div>
+        <div>{numbers(16, drawnedNumbers, "green")}</div>
+        <div>{numbers(31, drawnedNumbers, "blue")}</div>
+        <div>{numbers(46, drawnedNumbers, "purple")}</div>
+        <div>{numbers(61, drawnedNumbers, "orange")}</div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
